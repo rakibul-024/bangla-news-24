@@ -16,6 +16,7 @@ export default function SignUpPage() {
     <AuthForm
       callbackURL="/profile"
       backendConfigured={isAuthConfigured()}
+      isVercelDeployment={process.env.VERCEL === "1"}
       mode="signup"
       providers={getConfiguredSocialProviders()}
       verificationRequired={isEmailVerificationConfigured()}

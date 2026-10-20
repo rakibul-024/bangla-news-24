@@ -14,6 +14,7 @@ export default function AuthForm({
   providers = [],
   callbackURL = "/",
   backendConfigured = true,
+  isVercelDeployment = false,
   verificationRequired = false,
 }) {
   const router = useRouter();
@@ -94,9 +95,23 @@ export default function AuthForm({
 
         {!backendConfigured ? (
           <p className="auth-error" role="status">
-            প্রজেক্টের root folder-এ `.env.local` ফাইলে `MONGODB_URL` এবং
-            অন্তত ৩২ অক্ষরের `BETTER_AUTH_SECRET` সেট করে dev server বন্ধ করে
-            আবার চালু করুন। Google, GitHub ও Discord login ঐচ্ছিক।
+            {isVercelDeployment ? (
+              <>
+                Vercel-এ signup চালু করতে Project → Settings → Environment
+                Variables-এ `MONGODB_URL` (MongoDB Atlas connection string) এবং
+                অন্তত ৩২ অক্ষরের `BETTER_AUTH_SECRET` যোগ করুন। এই site-এর
+                `BETTER_AUTH_URL` ও `BETTER_AUTH_TRUSTED_ORIGINS`-এ
+                `https://bangla-news-24-ruby.vercel.app` দিন, তারপর Production
+                deployment redeploy করুন। MongoDB Atlas-এ Vercel server-এর
+                connection অনুমোদিত থাকতে হবে।
+              </>
+            ) : (
+              <>
+                প্রজেক্টের root folder-এ `.env.local` ফাইলে `MONGODB_URL` এবং
+                অন্তত ৩২ অক্ষরের `BETTER_AUTH_SECRET` সেট করে dev server বন্ধ
+                করে আবার চালু করুন। Google, GitHub ও Discord login ঐচ্ছিক।
+              </>
+            )}
           </p>
         ) : (
           <form className="auth-form" onSubmit={handleSubmit}>

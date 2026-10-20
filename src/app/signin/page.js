@@ -31,6 +31,7 @@ export default async function SignInPage({ searchParams }) {
     <AuthForm
       callbackURL={getSafeCallbackURL(params.callbackURL)}
       backendConfigured={isAuthConfigured()}
+      isVercelDeployment={process.env.VERCEL === "1"}
       mode="signin"
       providers={getConfiguredSocialProviders()}
       verificationRequired={isEmailVerificationConfigured()}

@@ -8,8 +8,9 @@ function getAuthHandler(method) {
     if (!isAuthConfigured()) {
       return Response.json(
         {
-          error:
-            "Authentication is not configured. Set MONGODB_URL and BETTER_AUTH_SECRET in .env.local.",
+          error: process.env.VERCEL
+            ? "Authentication is not configured. Add MONGODB_URL and BETTER_AUTH_SECRET under Vercel Project Settings > Environment Variables, then redeploy."
+            : "Authentication is not configured. Set MONGODB_URL and BETTER_AUTH_SECRET in .env.local, then restart the dev server.",
         },
         { status: 503 },
       );
