@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Bangla News 24
 
-## Getting Started
+Next.js App Router দিয়ে তৈরি বাংলা নিউজ ওয়েব অ্যাপ। খবরের তথ্য নেওয়া হয়
+[news-api-v2](https://news-api-v2.vercel.app/) API থেকে।
 
-First, run the development server:
+## চালানো
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+লোকাল সাইট দেখতে `http://localhost:3000` খুলুন।
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## অ্যাপের পেজ
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `/` — হোমপেজ, সর্বশেষ খবর, API-র কিউরেট করা সেকশন এবং সর্বাধিক পঠিত খবর
+- `/category/world` — ক্যাটাগরি ও পৃষ্ঠা অনুযায়ী খবর
+- `/news/{id}` — পূর্ণ খবর, প্রকাশের তথ্য ও সূত্র
+- `/popular` — সর্বাধিক পঠিত খবর
+- `/signin` ও `/signup` — ইমেইল/পাসওয়ার্ড এবং কনফিগার করা Google/GitHub/Discord login
+- `/profile` — লগ-ইন করা ব্যবহারকারীর প্রোফাইল; নাম ও ছবি সম্পাদনা
+- `/forgot-password` ও `/reset-password` — Resend দিয়ে পাসওয়ার্ড রিসেট
 
-## Learn More
+## ব্যবহৃত API
 
-To learn more about Next.js, take a look at the following resources:
+- `/api/categories`
+- `/api/news`
+- `/api/news/sections`
+- `/api/news/most-read`
+- `/api/category/{slug}`
+- `/api/article/{id}`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+API response পাঁচ মিনিটের জন্য revalidate হয়। API অনুপলব্ধ থাকলে সাইট retry করার বার্তা দেখায়।
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Authentication সেটআপ
 
-## Deploy on Vercel
+1. MongoDB Atlas-এ একটি database তৈরি করে connection string নিন।
+2. প্রজেক্টের root folder-এ `.env.local` তৈরি করুন (`Copy-Item .env.example .env.local`), তারপর সেখানে `MONGODB_URL` (বা `BETTER_AUTH_DB_URL`/`BETTER_Auth_DB_URL`) ও অন্তত ৩২ অক্ষরের `BETTER_AUTH_SECRET` বসান। Secret বানাতে `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` চালাতে পারেন। `.env.example` নিজে থেকে load হয় না; `.env.local`-এ values যোগ করার পর dev server বন্ধ করে আবার চালান।
+3. Local development-এ `BETTER_AUTH_URL` ও `BETTER_AUTH_TRUSTED_ORIGINS`-এ `http://localhost:3000` দিন। Vercel-এ MongoDB URL ও secret environment variable হিসেবে দিন এবং `BETTER_AUTH_URL`-এ production HTTPS domain সেট করুন। `BETTER_AUTH_URL` ভুলে localhost থাকলেও production Vercel URL স্বয়ংক্রিয়ভাবে base URL হবে; Vercel URL-ও trusted origin হিসেবে যোগ হয়।
+4. Google/GitHub/Discord sign-in চালু করতে সংশ্লিষ্ট developer console-এ OAuth app তৈরি করে Client ID/Secret দিন। Callback URL হবে `{BETTER_AUTH_URL}/api/auth/callback/{provider}`; OAuth app-এর callback-ও production domain-এ সেট করুন।
+5. `RESEND_API_KEY` ও যাচাইকৃত sender address `RESEND_FROM_EMAIL` দিলে password reset email চালু হবে। Resend-এর test sender সাধারণত কেবল নিজের verified recipient-এ email পাঠাতে পারে; production-এর জন্য sender domain verify করুন। Email verification চাইলে `AUTH_REQUIRE_EMAIL_VERIFICATION=true` দিন এবং verified sender ব্যবহার করুন; এটি default-এ বন্ধ, যাতে test sender signup আটকে না দেয়।
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+News ticker shared root layout-এ থাকে, তাই সব route-এ দেখা যায়; headline API পাঁচ মিনিট পরপর refresh হয়। `/profile` route proxy-তে cookie আছে কি না দ্রুত যাচাই করে, তারপর server-side-এ প্রকৃত session যাচাই করা হয়। শুধু proxy cookie check-কে authorization হিসেবে ব্যবহার করা হয় না।
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## যাচাই ও ডেপ্লয়
+
+```bash
+npm run lint
+npm run build
+```
+
+Vercel-এ repository import করে deploy করুন। Authentication-এর জন্য MongoDB URL ও Better Auth secret প্রয়োজন; OAuth ও Resend ঐচ্ছিক।
