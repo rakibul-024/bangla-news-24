@@ -43,6 +43,8 @@ API response পাঁচ মিনিটের জন্য revalidate হয়�
 
 News ticker shared root layout-এ থাকে, তাই সব route-এ দেখা যায়; headline API পাঁচ মিনিট পরপর refresh হয়। `/profile` route proxy-তে cookie আছে কি না দ্রুত যাচাই করে, তারপর server-side-এ প্রকৃত session যাচাই করা হয়। শুধু proxy cookie check-কে authorization হিসেবে ব্যবহার করা হয় না।
 
+Better Auth-এর email/password account `MONGODB_DATABASE`-এ (default `bangla-news-24`) সংরক্ষিত হয়। MongoDB Atlas → Cluster → Browse Collections-এ গিয়ে ওই database-এর `user` collection-এ profile এবং `account` collection-এ login account দেখুন। Local ও Vercel-এ একই Atlas cluster এবং database ব্যবহার করলে একই collection-এ account থাকবে; Vercel API `503` দিলে সেখানে account তৈরি হয়নি। Vercel-এ signup কাজ করার পরও record না দেখলে দুই environment-এর `MONGODB_URL` ও `MONGODB_DATABASE` একই কিনা যাচাই করুন।
+
 ## যাচাই ও ডেপ্লয়
 
 ```bash
