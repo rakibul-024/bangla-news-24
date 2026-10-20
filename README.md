@@ -45,6 +45,8 @@ News ticker shared root layout-এ থাকে, তাই সব route-এ দ�
 
 Better Auth-এর email/password account `MONGODB_DATABASE`-এ (default `bangla-news-24`) সংরক্ষিত হয়। MongoDB Atlas → Cluster → Browse Collections-এ গিয়ে ওই database-এর `user` collection-এ profile এবং `account` collection-এ login account দেখুন। Local ও Vercel-এ একই Atlas cluster এবং database ব্যবহার করলে একই collection-এ account থাকবে; Vercel API `503` দিলে সেখানে account তৈরি হয়নি। Vercel-এ signup কাজ করার পরও record না দেখলে দুই environment-এর `MONGODB_URL` ও `MONGODB_DATABASE` একই কিনা যাচাই করুন।
 
+Secret safety: MongoDB URI, Better Auth secret, OAuth client secret এবং Resend API key শুধু server-side environment variables-এ রাখুন। এগুলো `NEXT_PUBLIC_` নাম দেবেন না, browser/client code-এ পড়বেন না, `console.log` করবেন না বা Git-এ commit করবেন না। Local secret `.env.local`-এ থাকে (VS Code-এ এটি খুললে value দেখা যায়; fileটি Git-এ ignored), আর Vercel secret Environment Variables-এ encrypted/redacted থাকে। Better Auth-এর internal console logging disabled রাখা হয়েছে; এতে secrets development/build console-এ ছাপা হবে না। আগে শেয়ার করা credential-গুলো Google Cloud, MongoDB Atlas ও Resend dashboard থেকে revoke/rotate করে নতুন values local `.env.local` এবং Vercel Environment Variables—দুই জায়গাতেই বসান, তারপর redeploy করুন।
+
 ## যাচাই ও ডেপ্লয়
 
 ```bash

@@ -314,6 +314,7 @@ export function getAuth() {
       appName: "Bangla News 24",
       baseURL: getAuthBaseURL(),
       secret,
+      logger: { disabled: true },
       database: mongodbAdapter(
         mongoClient.db(
           getEnvironmentValue("MONGODB_DATABASE") || "bangla-news-24",
