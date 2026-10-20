@@ -101,7 +101,7 @@ export default function AuthForm({
                 Variables-এ `MONGODB_URL` (MongoDB Atlas connection string) এবং
                 অন্তত ৩২ অক্ষরের `BETTER_AUTH_SECRET` যোগ করুন। এই site-এর
                 `BETTER_AUTH_URL` ও `BETTER_AUTH_TRUSTED_ORIGINS`-এ
-                `https://bangla-news-24-ruby.vercel.app` দিন, তারপর Production
+                `https://bangla-news-24-be4.vercel.app` দিন, তারপর Production
                 deployment redeploy করুন। MongoDB Atlas-এ Vercel server-এর
                 connection অনুমোদিত থাকতে হবে।
               </>

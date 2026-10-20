@@ -6,6 +6,7 @@ import { Resend } from "resend";
 let mongoClient;
 let authInstance;
 let resendClient;
+let invalidAuthURLWarningLogged = false;
 
 function getEnvironmentValue(...names) {
   for (const name of names) {
@@ -22,15 +23,29 @@ function getEmailConfiguration() {
   return apiKey && fromEmail ? { apiKey, fromEmail } : null;
 }
 
+function getHttpOrigin(value) {
+  if (!value) return undefined;
+
+  try {
+    const url = new URL(value);
+    if (url.protocol === "http:" || url.protocol === "https:") {
+      return url.origin;
+    }
+  } catch {}
+
+  return undefined;
+}
+
 function getDeploymentOrigin(hostname) {
   if (!hostname) return undefined;
-  return hostname.startsWith("http")
-    ? new URL(hostname).origin
-    : `https://${hostname}`;
+  return getHttpOrigin(
+    hostname.startsWith("http") ? hostname : `https://${hostname}`,
+  );
 }
 
 function getAuthBaseURL() {
-  const configuredURL = getEnvironmentValue("BETTER_AUTH_URL");
+  const configuredValue = getEnvironmentValue("BETTER_AUTH_URL");
+  const configuredURL = getHttpOrigin(configuredValue);
   const deploymentURL = getDeploymentOrigin(
     getEnvironmentValue("VERCEL_PROJECT_PRODUCTION_URL", "VERCEL_URL"),
   );
@@ -39,20 +54,49 @@ function getAuthBaseURL() {
     configuredHost,
   );
 
-  if (process.env.NODE_ENV === "production" && isLocalURL) {
-    return deploymentURL;
+  if (configuredValue && !configuredURL) {
+    if (!invalidAuthURLWarningLogged) {
+      console.error(
+        "BETTER_AUTH_URL must be a complete http:// or https:// URL. Falling back to the deployment URL when available.",
+      );
+      invalidAuthURLWarningLogged = true;
+    }
   }
 
-  return configuredURL || deploymentURL;
+  if (process.env.NODE_ENV === "production" && isLocalURL) {
+    if (deploymentURL) return deploymentURL;
+    throw new Error(
+      "BETTER_AUTH_URL points to localhost in production, and no Vercel deployment URL is available.",
+    );
+  }
+
+  const baseURL = configuredURL || deploymentURL;
+  if (!baseURL && process.env.NODE_ENV === "production") {
+    throw new Error(
+      "Set BETTER_AUTH_URL to a valid HTTPS URL or configure the Vercel deployment URL.",
+    );
+  }
+
+  return baseURL;
 }
 
 function getTrustedOrigins() {
-  const configuredOrigins = (
+  const configuredOriginValues = (
     getEnvironmentValue("BETTER_AUTH_TRUSTED_ORIGINS") || ""
   )
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
+  const configuredOrigins = configuredOriginValues
+    .map(getHttpOrigin)
+    .filter(Boolean);
+
+  if (configuredOrigins.length !== configuredOriginValues.length) {
+    console.error(
+      "Ignoring invalid entries in BETTER_AUTH_TRUSTED_ORIGINS; use complete http:// or https:// origins.",
+    );
+  }
+
   const deploymentOrigins = [
     getEnvironmentValue("VERCEL_PROJECT_PRODUCTION_URL"),
     getEnvironmentValue("VERCEL_URL"),
